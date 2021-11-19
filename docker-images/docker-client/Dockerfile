@@ -4,8 +4,6 @@ ENV GO111MODULE=on
 RUN apk --no-cache add gcc git musl-dev
 RUN go get sigs.k8s.io/kustomize/kustomize/v4@v4.4.0
 RUN /go/bin/kustomize version
-RUN go get github.com/derailed/k9s@v0.25.3
-RUN /go/bin/k9s info
 
 FROM alpine:3.9 as k8s-sandbox
 
@@ -31,6 +29,14 @@ RUN groupadd -r k8s-sandbox \
     usermod -aG docker k8s-sandbox
 
 
+ENV K9S_VERSION=0.25.3
+RUN echo "install k9s" && \
+    curl -sf -LO https://github.com/derailed/k9s/releases/download/v${K9S_VERSION}/k9s_Linux_x86_64.tar.gz && \
+    tar -zxvf k9s_Linux_x86_64.tar.gz  && \
+    mv k9s /usr/local/bin/k9s && \
+    chmod +x /usr/local/bin/k9s && \
+    rm -rf k9s_Linux_x86_64.tar.gz linux-amd64 LICENSE README
+
 ENV YQ_VERSION=3.4.1
 RUN echo "install yq" && \
     curl --silent --fail -L https://github.com/mikefarah/yq/releases/download/${YQ_VERSION}/yq_linux_amd64 -o /usr/local/bin/yq && \
@@ -48,7 +54,7 @@ RUN echo "install kubectl" && \
     curl --silent --fail -L https://storage.googleapis.com/kubernetes-release/release/${KUBECTL_VERSION}/bin/linux/amd64/kubectl -o /usr/local/bin/kubectl && \
     chmod +x /usr/local/bin/kubectl
 
-ENV HELM_VERSION=v3.7.1
+ENV HELM_VERSION=v3.6.2
 RUN echo "install helm" && \
     curl -sf -LO https://get.helm.sh/helm-${HELM_VERSION}-linux-amd64.tar.gz && \
     tar -zxvf helm-${HELM_VERSION}-linux-amd64.tar.gz && \
@@ -56,7 +62,6 @@ RUN echo "install helm" && \
     chmod +x /usr/local/bin/helm && \
     rm -rf helm-${HELM_VERSION}-linux-amd64.tar.gz linux-amd64
 
-COPY --from=builder-kustomize /go/bin/k9s /usr/local/bin/
 COPY --from=builder-kustomize /go/bin/kustomize /usr/local/bin/
 
 # k14s ytt

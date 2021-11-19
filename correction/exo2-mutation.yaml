@@ -1,0 +1,232 @@
+---
+apiVersion: mutations.gatekeeper.sh/v1alpha1
+kind: Assign
+metadata:
+  name: k8spspdefaultallowprivilegeescalation
+spec:
+  applyTo:
+  - groups: [""]
+    kinds: ["Deployment", "Pod", "CronJob", "Job", "StatefulSet"]
+    versions: ["v1"]
+  match:
+    scope: Namespaced
+    kinds:
+    - apiGroups: ["*"]
+      kinds: ["Pod"]
+    namespaces: ["exo2"]
+    labelSelector:
+      matchExpressions:
+        - operator: "In"
+          key: "app"
+          values: ["simple-server"]
+  location: "spec.containers[name:*].securityContext.allowPrivilegeEscalation"
+  parameters:
+    pathTests:
+    - subPath: "spec.containers[name:*].securityContext.allowPrivilegeEscalation"
+      condition: MustNotExist
+    assign:
+      value: false
+---
+apiVersion: mutations.gatekeeper.sh/v1alpha1
+kind: Assign
+metadata:
+  name: k8spsprunasnonroot
+spec:
+  applyTo:
+  - groups: [""]
+    kinds: ["Deployment", "Pod", "CronJob", "Job", "StatefulSet"]
+    versions: ["v1"]
+  match:
+    scope: Namespaced
+    kinds:
+    - apiGroups: ["*"]
+      kinds: ["Pod"]
+    namespaces: ["exo2"]
+    labelSelector:
+      matchExpressions:
+        - operator: "In"
+          key: "app"
+          values: ["simple-server"]
+  location: "spec.containers[name:*].securityContext.runAsNonRoot"
+  parameters:
+    pathTests:
+      - subPath: "spec.containers[name:*].securityContext.runAsNonRoot"
+        condition: MustNotExist
+    assign:
+      value: true
+---
+apiVersion: mutations.gatekeeper.sh/v1alpha1
+kind: Assign
+metadata:
+  name: k8spspreadonlyrootfs
+spec:
+  applyTo:
+  - groups: [""]
+    kinds: ["Deployment", "Pod", "CronJob", "Job", "StatefulSet"]
+    versions: ["v1"]
+  match:
+    scope: Namespaced
+    kinds:
+    - apiGroups: ["*"]
+      kinds: ["Pod"]
+    namespaces: ["exo2"]
+    labelSelector:
+      matchExpressions:
+        - operator: "In"
+          key: "app"
+          values: ["simple-server"]
+  location: "spec.containers[name:*].securityContext.readOnlyRootFilesystem"
+  parameters:
+    pathTests:
+    - subPath: "spec.containers[name:*].securityContext.readOnlyRootFilesystem"
+      condition: MustNotExist
+    assign:
+      value: true
+---
+apiVersion: mutations.gatekeeper.sh/v1alpha1
+kind: Assign
+metadata:
+  name: k8spsprunasuser
+spec:
+  applyTo:
+  - groups: [""]
+    kinds: ["Deployment", "Pod", "CronJob", "Job", "StatefulSet"]
+    versions: ["v1"]
+  match:
+    scope: Namespaced
+    kinds:
+    - apiGroups: ["*"]
+      kinds: ["Pod"]
+    namespaces: ["exo2"]
+    labelSelector:
+      matchExpressions:
+        - operator: "In"
+          key: "app"
+          values: ["simple-server"]
+  location: "spec.containers[name:*].securityContext.runAsUser"
+  parameters:
+    pathTests:
+    - subPath: "spec.containers[name:*].securityContext.runAsUser"
+      condition: MustNotExist
+    assign:
+      value: 1001
+---
+apiVersion: mutations.gatekeeper.sh/v1alpha1
+kind: Assign
+metadata:
+  name: k8spsprunasgroup
+spec:
+  applyTo:
+  - groups: [""]
+    kinds: ["Deployment", "Pod", "CronJob", "Job", "StatefulSet"]
+    versions: ["v1"]
+  match:
+    scope: Namespaced
+    kinds:
+    - apiGroups: ["*"]
+      kinds: ["Pod"]
+    namespaces: ["exo2"]
+    labelSelector:
+      matchExpressions:
+        - operator: "In"
+          key: "app"
+          values: ["simple-server"]
+  location: "spec.containers[name:*].securityContext.runAsGroup"
+  parameters:
+    pathTests:
+    - subPath: "spec.containers[name:*].securityContext.runAsGroup"
+      condition: MustNotExist
+    assign:
+      value: 1001
+---
+apiVersion: mutations.gatekeeper.sh/v1alpha1
+kind: Assign
+metadata:
+  name: k8spspcapabilities
+spec:
+  applyTo:
+  - groups: [""]
+    kinds: ["Pod"]
+    versions: ["v1"]
+  match:
+    scope: Namespaced
+    kinds:
+    - apiGroups: ["*"]
+      kinds: ["Pod"]
+    namespaces: ["exo2"]
+  location: "spec.containers[name:*].securityContext.capabilities.drop"
+  parameters:
+    assign:
+      value: ["ALL"]
+---
+apiVersion: mutations.gatekeeper.sh/v1alpha1
+kind: AssignMetadata
+metadata:
+  name: k8spspseccomp
+spec:
+  match:
+    scope: Namespaced
+    kinds:
+    - apiGroups: ["*"]
+      kinds: ["Pod"]
+    namespaces: ["exo2"]
+  location: metadata.annotations."seccomp.security.alpha.kubernetes.io/pod"
+  parameters:
+    assign:
+      value: runtime/default
+---
+apiVersion: mutations.gatekeeper.sh/v1alpha1
+kind: Assign
+metadata:
+  name: denyfsgroup
+spec:
+  applyTo:
+  - groups: [""]
+    kinds: ["Pod"]
+    versions: ["v1"]
+  match:
+    scope: Namespaced
+    kinds:
+    - apiGroups: ["*"]
+      kinds: ["Pod"]
+    namespaces: ["exo2"]
+    labelSelector:
+      matchExpressions:
+        - operator: "In"
+          key: "app"
+          values: ["simple-server"]
+  location: "spec.securityContext.fsGroup"
+  parameters:
+    pathTests:
+    - subPath: "spec.securityContext.fsGroup"
+      condition: MustNotExist
+    assign:
+      value: 1001
+---
+apiVersion: mutations.gatekeeper.sh/v1alpha1
+kind: Assign
+metadata:
+  name: denysupfsgroup
+spec:
+  applyTo:
+  - groups: [""]
+    kinds: ["Pod"]
+    versions: ["v1"]
+  match:
+    scope: Namespaced
+    kinds:
+    - apiGroups: ["*"]
+      kinds: ["Pod"]
+    namespaces: ["exo2"]
+    labelSelector:
+      matchExpressions:
+        - operator: "In"
+          key: "app"
+          values: ["simple-server"]
+  location: "spec.securityContext.supplementalGroups"
+  parameters:
+    pathTests:
+    - subPath: "spec.securityContext.supplementalGroups"
+      condition: MustNotExist
+    assign:
+      value: [1001]

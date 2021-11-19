@@ -6,8 +6,8 @@ source $(dirname 0)/scripts/libs.bash
 ###########################################
 # Vars
 ###########################################
-DOCKER_IMAGE="k8ssandbox"
-REF_K8S="latest"
+DOCKER_IMAGE="avaussant/k8s-sandbox"
+REF_K8S="1.21.1"
 
 msg_info "Check if docker is running"
 

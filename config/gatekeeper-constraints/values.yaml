@@ -1,0 +1,12 @@
+# Default values for gatekeeper-rules.
+# This is a YAML-formatted file.
+# Declare variables to be passed into your templates.
+
+nsExluded:
+  - kube-system
+  - gatekeeper-system
+  - monitoring
+  - local-path-storage
+  - ingress-nginx
+  - exo1
+  - exo3

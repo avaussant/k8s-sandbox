@@ -1,0 +1,12 @@
+apiVersion: config.gatekeeper.sh/v1alpha1
+kind: Config
+metadata:
+  name: config
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "gatekeeper-constraints.labels" . | nindent 4 }}
+spec:
+  match:
+    - excludedNamespaces:
+{{ toYaml .Values.nsExluded | indent 8 }}  
+      processes: ["*"]
