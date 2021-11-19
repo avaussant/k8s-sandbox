@@ -1,0 +1,19 @@
+
+prometheusRule:
+  enabled: true
+  additionalLabels: 
+    release: kube-prometheus-stack
+    app: kube-prometheus-stack
+  namespace: "exo4"
+  rules: 
+  - alert: PostgresqlDown
+    expr: pg_up == 0
+    for: 5m
+    labels:
+      service: postgresql
+      severity: critical
+    annotations:
+      summary: Postgresql down (instance {{"{{ $labels.instance }}"}})
+      description: Postgresql instance is down  VALUE = {{"{{ $value }}"}}
+
+ 

@@ -1,0 +1,80 @@
+#################################################
+# Postgresql deployment
+#################################################
+
+nameOverride: my-db
+fullnameOverride: my-db
+serviceAccount:
+  enabled: true
+
+image:
+  debug: true
+
+volumePermissions:
+  enabled: true
+
+psp:
+  create: true
+
+rbac:
+  create: true
+
+replication:
+  enabled: false
+  password: J88faOIzqb
+
+postgresqlUsername: postgres
+postgresqlPassword: 123itsnotfree
+
+initdbScripts:
+  init-db.sql: |
+    CREATE DATABASE lol ENCODING 'UTF8';
+    CREATE DATABASE me ENCODING 'UTF8';
+    CREATE DATABASE you ENCODING 'UTF8';
+    CREATE DATABASE badnews ENCODING 'UTF8';
+    CREATE EXTENSION pg_stat_statements;
+
+shmVolume:
+  enabled: true
+  chmod:
+    enabled: true
+
+persistence:
+  enabled: true
+  mountPath: /bitnami/postgresql
+  subPath: ""
+  accessModes:
+    - ReadWriteOnce
+  size: 1Gi
+  annotations: {}
+
+updateStrategy:
+  type: RollingUpdate
+
+
+resources:
+  requests:
+    memory: 128Mi
+    cpu: 250m
+
+networkPolicy:
+  enabled: true
+  allowExternal: true
+
+livenessProbe:
+  enabled: true
+  initialDelaySeconds: 30
+  periodSeconds: 10
+  timeoutSeconds: 5
+  failureThreshold: 6
+  successThreshold: 1
+
+readinessProbe:
+  enabled: true
+  initialDelaySeconds: 5
+  periodSeconds: 10
+  timeoutSeconds: 5
+  failureThreshold: 6
+  successThreshold: 1
+
+postgresqlMaxConnections: 100
