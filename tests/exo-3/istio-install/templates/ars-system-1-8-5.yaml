@@ -1,4 +1,4 @@
-{{- if eq $.Values.profile "istio-1-9-3" }}
+{{- if eq $.Values.profile "istio-1-8-5" }}
 apiVersion: install.istio.io/v1alpha1
 kind: IstioOperator
 metadata:
@@ -8,7 +8,6 @@ spec:
   hub: {{ .Values.repo }}
   tag: {{ .Values.version }}
 
-  # You may override parts of meshconfig by uncommenting the following lines.
   meshConfig:
     accessLogFile: "/dev/stdout"
     accessLogEncoding: JSON
@@ -37,13 +36,6 @@ spec:
               fieldRef:
                 apiVersion: v1
                 fieldPath: metadata.namespace
-        resources:
-          requests:
-            cpu: 100m
-            memory: 128Mi
-          limits:
-            cpu: 100m
-            memory: 128Mi
         readinessProbe:
           httpGet:
             path: /ready
@@ -97,8 +89,8 @@ spec:
             cpu: 100m
             memory: 128Mi
           limits:
-            cpu: 100m
-            memory: 128Mi
+            cpu: 2000m
+            memory: 1024Mi
         logLevel: info
         componentLogLevel: "misc:error"
         privileged: false
@@ -111,8 +103,7 @@ spec:
         excludeIPRanges: ""
         excludeOutboundPorts: ""
         excludeInboundPorts: ""
-        # allow to inject sidecar
-        autoInject: false
+        autoInject: enabled
         tracer: "zipkin"
       proxy_init:
         image: proxyv2
@@ -142,6 +133,9 @@ spec:
       oneNamespace: false
       defaultNodeSelector: {}
       configValidation: true
+      meshExpansion:
+        enabled: false
+        useILB: false
       multiCluster:
         enabled: false
         clusterName: ""
@@ -200,12 +194,12 @@ spec:
     istiodRemote:
       injectionURL: ""
 
-    # sidecar injection
     sidecarInjectorWebhook:
       enableNamespacesByDefault: false
       rewriteAppHTTPProbe: true
       objectSelector:
         enabled: false
-        # allow to inject sidecar
-        autoInject: false
+        autoInject: true
+
+    clusterResources: true
 {{- end }}

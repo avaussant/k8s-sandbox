@@ -111,7 +111,7 @@ spec:
         excludeIPRanges: ""
         excludeOutboundPorts: ""
         excludeInboundPorts: ""
-        autoInject: enabled
+        autoInject: disabled
         tracer: "zipkin"
       proxy_init:
         image: proxyv2
@@ -204,5 +204,5 @@ spec:
       rewriteAppHTTPProbe: true
       objectSelector:
         enabled: false
-        autoInject: true
+        autoInject: false
 {{- end }}

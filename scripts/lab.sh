@@ -123,18 +123,14 @@ test3 (){
     -n istio-operator
   
   msg_info "Install Istio Profile 1.19 inside istio-system ns"
-  helm upgrade -i istio-install tests/exo-3/istio-install \
-    --atomic \
-    --wait \
-    --cleanup-on-fail \
-    -n istio-operator
+  helm upgrade -i istio-install tests/exo-3/istio-install -n istio-operator
 
   msg_output "1 - Retrieve CRD list"
   msg_output "2 - Retrieve Istio CRDs"
   msg_output "3 - Retrieve Istio Profile installed"
-  msg_output "4 - Export profile as yaml file / Activate auto injection as sidecar and apply it"
+  msg_output "4 - If needed Edit files tests/exo-3/istio-install/* / Activate auto injection as sidecar and relauch lab --exo3"
   msg_output "5 - Create Namespace exo3 - Add annotations for injection from CRD config"
-  msg_output "6 - Create simple deployment and checking injection"
+  msg_output "6 - Create simple deployment/svc/ing and checking injection and envoy sidecar logs - take a look on the template tests/exo-3/tpl-exo3.yaml"
   msg_info "Indication - take a look on the chart tests/exo-3/istio-install"
   msg_info "Indication - Operator is installed on ns istio-operator"
   msg_info "Indication - istiod is installed on ns istio-system"
