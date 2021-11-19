@@ -11,6 +11,8 @@ update_master_endpoint() {
   MASTER_IP=$(docker inspect --format='{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}' k8s-sandbox-control-plane)
   sed -i "s/^    server:.*/    server: https:\/\/$MASTER_IP:6443/" $HOME/.kube/config
 
+  chmod -R go-r $HOME/.kube/config
+
   msg_info "Attach client to kind network"
   docker network connect kind k8s-client
 }
@@ -75,20 +77,21 @@ update_kubeconfig() {
   msg_info "Check if we can get kubeconfig"
   mkdir -p $HOME/.kube
   kind get kubeconfig --name=k8s-sandbox >$HOME/.kube/config
-
   update_master_endpoint
 }
 
 test1 (){
-  msg_info "Exercice for Ingress - There is 1 error"
+  msg_info "Exercice for Ingress"
   kubectl apply -f tests/exo-1/ingress.yaml
-  msg_output "try from your browser : localhost/foo"
-  msg_output "try from your browser : localhost/bar"
   msg_error "what is wrong edit the file tests/exo-1/ingress.yaml and update it"
+  msg_output "1 - try from your browser : localhost/foo"
+  msg_output "2 - try from your browser : localhost/bar"
+  msg_output "3 - Find the error in tests/exo-1/ingress.yaml and relaunch lab --exo1"
+  msg_output "4 - Retry from your browser"
 }
 
 test2 (){
-  msg_info "Exercice for PsP and Admission controller - There is 1 error"
+  msg_info "Exercice for PsP and Admission controller"
   msg_info "Install rules Gatekeeper/Opa"
   helm upgrade -i gatekeeper-rules tests/exo-2/gatekeeper-rules \
     --wait \
@@ -100,7 +103,41 @@ test2 (){
   helm upgrade -i simple-server tests/exo-2/simple-server -n exo2 --create-namespace
   kubectl get all -n exo2
   msg_error "Can you check the deployment something goes wrong"
-  msg_info "You can try to fix it with mutation :) keep smile"
+  msg_output "You can try to fix it with mutation :) keep smile"
+  msg_output "Crd is your friend"
+  msg_output "1 - Find the deployment in namespace exo2"
+  msg_output "2 - Find why the deployment is failing in namespace exo2"
+  msg_output "3 - Try to fix or find a way to fix it"
+  msg_info "Indication - User/group/supplementalGroups might be 1001"
+}
+
+test3 (){
+  msg_info "Exercice for Operator and CRDs"
+  msg_info "Create Istio Operator Namespace"
+  kubectl apply -f config/istio-operator/operator-ns.yaml
+  msg_info "Install Istio operator"
+  helm upgrade -i istio-operator config/istio-operator \
+    --atomic \
+    --wait \
+    --cleanup-on-fail \
+    -n istio-operator
+  
+  msg_info "Install Istio Profile 1.19 inside istio-system ns"
+  helm upgrade -i istio-install tests/exo-3/istio-install \
+    --atomic \
+    --wait \
+    --cleanup-on-fail \
+    -n istio-operator
+
+  msg_output "1 - Retrieve CRD list"
+  msg_output "2 - Retrieve Istio CRDs"
+  msg_output "3 - Retrieve Istio Profile installed"
+  msg_output "4 - Export profile as yaml file / Activate auto injection as sidecar and apply it"
+  msg_output "5 - Create Namespace exo3 - Add annotations for injection from CRD config"
+  msg_output "6 - Create simple deployment and checking injection"
+  msg_info "Indication - take a look on the chart tests/exo-3/istio-install"
+  msg_info "Indication - Operator is installed on ns istio-operator"
+  msg_info "Indication - istiod is installed on ns istio-system"
 }
 
 ##########################################
@@ -113,6 +150,7 @@ help_script="options :
              or --kubeconfig
              or --exo1
              or --exo2
+             or --exo3
              blablabla"
 
 [ -z "$ACTION" ] && msg_error "${help_script}" && exit 1
@@ -123,6 +161,7 @@ while [[ "$#" -gt 0 ]]; do
   --kubeconfig) update_kubeconfig ;;
   --exo1) test1 ;;
   --exo2) test2 ;;
+  --exo3) test3 ;;
   -h | --help) msg_info "${help_script}" ;;
   *)
     msg_error "Unknown parameter passed: $1"

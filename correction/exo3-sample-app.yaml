@@ -1,0 +1,25 @@
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name:  exo3
+  labels:
+    istio-injection: disabled
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  name: myapp
+  namespace: exo3
+  labels:
+    name: myapp
+spec:
+  containers:
+  - name: myapp
+    image: yeasy/simple-web:latest
+    resources:
+      limits:
+        memory: "128Mi"
+        cpu: "100m"
+    ports:
+      - containerPort: 80

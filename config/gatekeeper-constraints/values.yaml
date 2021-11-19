@@ -8,5 +8,9 @@ nsExluded:
   - monitoring
   - local-path-storage
   - ingress-nginx
+  - istio-operator
+  - istio-system
   - exo1
   - exo3
+  - exo4
+  - exo5

@@ -1,0 +1,20 @@
+hub: istio
+tag: 1.9.3
+operatorNamespace: istio-operator
+istioNamespace: istio-system
+imagePullSecrets: ""
+
+waitForResourcesTimeout: 300s
+
+# revision for the operator resources
+revision: ""
+
+# Operator resource defaults
+operator:
+  resources: {}
+    # limits:
+    #   cpu: 200m
+    #   memory: 256Mi
+    # requests:
+    #   cpu: 50m
+    #   memory: 128Mi

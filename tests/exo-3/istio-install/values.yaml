@@ -1,0 +1,10 @@
+profile: "istio-1-9-3"
+name: istio-ars-system
+namespace: istio-system
+repo: istio
+version: 1.9.3
+
+podDisruptionBudget:
+  enabled: false
+istiod:
+  replicas: 1
