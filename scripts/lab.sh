@@ -15,6 +15,13 @@ update_master_endpoint() {
 
   msg_info "Attach client to kind network"
   docker network connect kind k8s-client
+
+  msg_output "Add helm repo"
+  helm repo add stable https://charts.helm.sh/stable
+  helm repo add bitnami https://charts.bitnami.com/bitnami
+  helm repo add gatekeeper https://open-policy-agent.github.io/gatekeeper/charts
+  helm repo add prometheus-community https://prometheus-community.github.io/helm-charts
+  helm repo update
 }
 
 lab_up() {
@@ -24,12 +31,6 @@ lab_up() {
   update_master_endpoint
 
   msg_output "$(printf %"s\n" && kubectl cluster-info --context kind-k8s-sandbox)"
-
-  msg_output "Add helm repo"
-  helm repo add stable https://charts.helm.sh/stable
-  helm repo add bitnami https://charts.bitnami.com/bitnami
-  helm repo add gatekeeper https://open-policy-agent.github.io/gatekeeper/charts
-  helm repo update
 
   msg_info "Install Nginx Ingress Controller"
   kubectl apply -f https://raw.githubusercontent.com/kubernetes/ingress-nginx/main/deploy/static/provider/kind/deploy.yaml
@@ -61,7 +62,7 @@ lab_up() {
     --cleanup-on-fail \
     -n gatekeeper-system
 
-
+  sleep 5
   lab_ready
 }
 
@@ -92,6 +93,7 @@ test1 (){
 
 test2 (){
   msg_info "Exercice for PsP and Admission controller"
+
   msg_info "Install rules Gatekeeper/Opa"
   helm upgrade -i gatekeeper-rules tests/exo-2/gatekeeper-rules \
     --wait \
@@ -136,6 +138,34 @@ test3 (){
   msg_info "Indication - istiod is installed on ns istio-system"
 }
 
+test4 (){
+  msg_info "Create k8s Lab for Monitoring and Logging - waiting ............"
+  if ! kind create cluster --config config/kind.yml --name k8s-sandbox --image kindest/node:v${K8S_VERSION} > /dev/null 2>&1; then
+    msg_info "It might be hard to put all in the same cluster :-("
+    msg_error "Please delete old lab before and try again with a fresh installation"
+  else
+    update_master_endpoint
+    msg_output "$(printf %"s\n" && kubectl cluster-info --context kind-k8s-sandbox)"
+  fi
+
+  msg_info "Exercice for Monitoring and Logging"
+  msg_info "Install Prometheus Adapter"
+  helm upgrade -i prometheus-adapter prometheus-community/prometheus-adapter \
+    -f tests/exo-4/prometheus-adapter.yaml \
+    --version 2.17.0 \
+    --atomic \
+    --cleanup-on-fail \
+    -n monitoring --create-namespace
+
+  msg_info "Install Prometheus Operator / Stack"
+  helm upgrade -i kube-prometheus-stack bitnami/kube-prometheus \
+    -f tests/exo-4/kube-prometheus-stack.yaml \
+    --version 6.4.1 \
+    --atomic \
+    --cleanup-on-fail \
+    -n monitoring --create-namespace
+}
+
 ##########################################
 # Main function
 ##########################################
@@ -147,6 +177,7 @@ help_script="options :
              or --exo1
              or --exo2
              or --exo3
+             or --exo4
              blablabla"
 
 [ -z "$ACTION" ] && msg_error "${help_script}" && exit 1
@@ -158,6 +189,7 @@ while [[ "$#" -gt 0 ]]; do
   --exo1) test1 ;;
   --exo2) test2 ;;
   --exo3) test3 ;;
+  --exo4) test4 ;;
   -h | --help) msg_info "${help_script}" ;;
   *)
     msg_error "Unknown parameter passed: $1"
