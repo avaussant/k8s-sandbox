@@ -1,0 +1,4 @@
+source /usr/local/bin/kube-ps1.sh
+unset KUBE_PS1_SYMBOL_COLOR KUBE_PS1_CTX_COLOR KUBE_PS1_NS_COLOR
+PS1='[\W $(kube_ps1)]\$ '
+alias lab='scripts/lab.sh'

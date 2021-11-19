@@ -1,0 +1,12 @@
+apiVersion: v2
+name: istio-install
+description: A Helm chart for Kubernetes
+version: 1.0.3
+appVersion: 1.9.3
+keywords:
+  - istio
+  - profile
+sources:
+  - http://github.com/istio/istio//manifests/profiles
+engine: gotpl
+icon: https://istio.io/favicons/android-192x192.png
