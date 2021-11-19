@@ -58,7 +58,6 @@ update_master_endpoint() {
   helm repo add bitnami https://charts.bitnami.com/bitnami
   helm repo add gatekeeper https://open-policy-agent.github.io/gatekeeper/charts
   helm repo add prometheus-community https://prometheus-community.github.io/helm-charts
-  helm repo add elastic https://helm.elastic.co
   helm repo update
 }
 
