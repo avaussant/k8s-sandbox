@@ -1,0 +1,164 @@
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: my-rules
+  namespace: "exo4"
+  labels:
+    release: kube-prometheus-stack
+    app: kube-prometheus-stack
+spec:
+  groups:
+  - name: myfirst-rules
+    rules:
+    - alert: PostgresqlRestarted
+      expr: time() - pg_postmaster_start_time_seconds < 60
+      for: 5m
+      labels:
+        service: postgresql
+        severity: critical
+      annotations:
+        summary: Postgresql restarted (instance {{"{{ $labels.instance }}"}})
+        description: Postgresql restarted  VALUE = {{ "{{ $value }}" }}
+
+##### Other templates
+ # - alert: PostgresqlExporterError
+  #   expr: pg_exporter_last_scrape_error > 1
+  #   for: 5m
+  #   labels:
+  #     service: postgresql
+  #     severity: warning
+  #   annotations:
+  #     summary: Postgresql exporter error (instance {{"{{ $labels.instance }}"}})
+  #     description: Postgresql exporter is showing errors. A query may be buggy in query.yaml  VALUE = {{"{{ $value }}"}}
+
+  # - alert: PostgreSQLMaxConnectionsReached
+  #   expr: sum(pg_stat_activity_count) by (instance) >= sum(pg_settings_max_connections) by (instance) - sum(pg_settings_superuser_reserved_connections) by (instance)
+  #   for: 1m
+  #   labels:
+  #     service: postgresql
+  #     severity: critical
+  #   annotations:
+  #     summary: ({{"{{ $labels.instance }}"}}) has maxed out Postgres connections.
+  #     description: ({{"{{ $labels.instance }}"}}) is exceeding the currently configured maximum Postgres connection limit (current value {{"{{ $value }}"}}s). Services may be degraded - please take immediate action (you probably need to increase max_connections in the Docker image and re-deploy.
+
+  # - alert: PostgreSQLHighConnections
+  #   expr: sum(pg_stat_activity_count) by (instance) > (sum(pg_settings_max_connections) by (instance) - sum(pg_settings_superuser_reserved_connections) by (instance)) * 0.8
+  #   for: 10m
+  #   labels:
+  #     service: postgresql
+  #     severity: warning
+  #   annotations:
+  #     summary: ({{"{{ $labels.instance }}"}}) is over 80% of max Postgres connections.
+  #     description: ({{"{{ $labels.instance }}"}}) is exceeding 80% of the currently configured maximum Postgres connection limit (current value {{"{{ $value }}"}}s). Please check utilization graphs and confirm if this is normal service growth, abuse or an otherwise temporary condition or if new resources need to be provisioned (or the limits increased, which is mostly likely).
+
+  # - alert: PostgreSQLSlowQueries
+  #   expr: avg(rate(pg_stat_activity_max_tx_duration{datname!~"template.*"}[2m])) by (datname) > 2 * 60
+  #   for: 2m
+  #   labels:
+  #     service: postgresql
+  #     severity: warning
+  #   annotations:
+  #     summary: PostgreSQL high number of slow on {{"{{ $labels.cluster }}"}} for database {{"{{ $labels.datname }}"}}
+  #     description: PostgreSQL high number of slow queries {{"{{ $labels.cluster }}"}} for database {{"{{ $labels.datname }}"}} with a value of {{"{{ $value }}"}} 
+
+  # - alert: PostgreSQLQPS
+  #   expr: avg(irate(pg_stat_database_xact_commit{datname!~"template.*"}[5m]) + irate(pg_stat_database_xact_rollback{datname!~"template.*"}[5m])) by (datname) > 10000
+  #   for: 5m
+  #   labels:
+  #     service: postgresql
+  #     severity: warning
+  #   annotations:
+  #     summary: PostgreSQL high number of queries|seconds on {{"{{ $labels.cluster }}"}} for database {{"{{ $labels.datname }}"}}
+  #     description: PostgreSQL high number of queries|seconds {{"{{ $labels.cluster }}"}} for database {{"{{ $labels.datname }}"}} with a value of {{"{{ $value }}"}} 
+
+  # - alert: PostgresqlReplicationLag
+  #   expr: (pg_replication_lag) > 10 and ON(instance) (pg_replication_is_replica == 1)
+  #   for: 5m
+  #   labels:
+  #     service: postgresql
+  #     severity: warning
+  #   annotations:
+  #     summary: Postgresql replication lag (instance {{"{{ $labels.instance }}"}})
+  #     description: PostgreSQL replication lag is going up +10s value {{"{{ $value }}"}}  labels {{"{{ $labels }}"}}
+
+  # - alert: PostgresqlNotEnoughConnections
+  #   expr: sum by (datname) (pg_stat_activity_count{datname!~"template.*|postgres|notary_signer|notary_server|clair"}) < 5
+  #   for: 5m
+  #   labels:
+  #     service: postgresql
+  #     severity: warning
+  #   annotations:
+  #     summary: Postgresql NotEnoughConnections (instance {{"{{ $labels.instance }}"}})
+  #     description: PostgreSQL instance should have more client value {{"{{ $value }}"}} labels {{"{{ $labels }}"}}
+
+  # - alert: PostgresqlHighRollbackRate
+  #   expr: rate(pg_stat_database_xact_rollback{datname!~"template.*|postgres"}[3m]) / rate(pg_stat_database_xact_commit{datname!~"template.*|postgres"}[3m]) > 0.02
+  #   for: 5m
+  #   labels:
+  #     service: postgresql
+  #     severity: warning
+  #   annotations:
+  #     summary: Postgresql high rollback rate (instance {{"{{ $labels.instance }}"}})
+  #     description: Ratio of transactions being aborted compared to committed is > 2 % value {{"{{ $value }}"}} labels {{"{{ $labels }}"}}
+
+  # - alert: PostgresqlCommitRateLow
+  #   expr: rate(pg_stat_database_xact_commit{datname!~"template.*|postgres|notary_signer|notary_server|clair"}[1m]) < 1
+  #   for: 5m
+  #   labels:
+  #     service: postgresql
+  #     severity: critical
+  #   annotations:
+  #     summary: Postgresql commit rate low (instance {{"{{ $labels.instance }}"}})
+  #     description: Postgres not really used transact value {{"{{ $value }}"}} labels {{"{{ $labels }}"}}
+
+  # - alert: PostgresqlWalIssue
+  #   expr: rate(pg_stat_replication_pg_current_wal_lsn_bytes[5m]) == 0 and rate(pg_stat_replication_pg_wal_lsn_diff[5m]) != 0
+  #   for: 5m
+  #   labels:
+  #     service: postgresql
+  #     severity: warning
+  #   annotations:
+  #     summary: Postgresql Wal (instance {{"{{ $labels.instance }}"}})
+  #     description: Postgresql Wal value {{"{{ $value }}"}} labels {{"{{ $labels }}"}}
+
+  # - alert: PostgresqlTooManyDeadTuples
+  #   expr: ((pg_stat_user_tables_n_dead_tup > 10000) / (pg_stat_user_tables_n_live_tup + pg_stat_user_tables_n_dead_tup)) >= 0.1 unless ON(instance) (pg_replication_is_replica == 1)
+  #   for: 5m
+  #   labels:
+  #     service: postgresql
+  #     severity: warning
+  #   annotations:
+  #     summary: PostgresqlTooManyDeadTuples ((instance {{"{{ $labels.instance }}"}})
+  #     description: PostgresqlTooManyDeadTuples is too large {{"{{ $value }}"}} labels {{"{{ $labels }}"}}
+
+
+
+
+  # - alert: PostgresqlTableNotVaccumed
+  #   expr: time() - pg_stat_user_tables_last_autovacuum > 60 * 60 * 24
+  #   for: 5m
+  #   labels:
+  #     service: postgresql
+  #     severity: warning
+  #   annotations:
+  #     summary: Postgresql table not vaccumed (instance {{"{{ $labels.instance }}"}})
+  #     description: Table has not been vaccum for 24h value {{"{{ $value }}"}}  labels {{"{{ $labels }}"}}
+  # - alert: PostgresqlTableNotAnalyzed
+  #   expr: time() - pg_stat_user_tables_last_autoanalyze > 60 * 60 * 24
+  #   for: 5m
+  #   labels:
+  #     service: postgresql
+  #     severity: warning
+  #   annotations:
+  #     summary: Postgresql table not analyzed (instance {{"{{ $labels.instance }}"}})
+  #     description: Table has not been analyzed for 24h value {{"{{ $value }}"}}  labels {{"{{ $labels }}"}}
+
+  # - alert: PostgreSQLCacheHitRatio
+  #   expr: avg(rate(pg_stat_database_blks_hit{datname!~"template.*"}[5m]) / (rate(pg_stat_database_blks_hit{datname!~"template.*"}[5m]) + rate(pg_stat_database_blks_read{datname!~"template.*"}[5m]))) by (datname) < 0.98
+  #   for: 5m
+  #   labels:
+  #     service: postgresql
+  #     severity: warning
+  #   annotations:
+  #     summary: PostgreSQL low cache hit rate on {{"{{ $labels.cluster }}"}} for database {{"{{ $labels.datname }}"}}
+  #     description: PostgreSQL low on cache hit rate on {{"{{ $labels.cluster }}"}} for database {{"{{ $labels.datname }}"}} with a value of {{"{{ $value }}"}} 
